@@ -1,2 +1,0 @@
-# wit
-Wit AI wrapper
