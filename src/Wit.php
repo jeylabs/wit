@@ -4,12 +4,10 @@ namespace Jeylabs\Wit;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise;
-use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\RequestOptions as GuzzleRequestOptions;
 
 class Wit
 {
-
     const VERSION = '1.0.0';
     const WIT_API_BASE_URI = 'https://api.wit.ai/';
     const TEXT_INTENT_API = 'message';
@@ -29,8 +27,8 @@ class Wit
         $this->access_token = $access_token;
         $this->isAsyncRequest = $isAsyncRequest;
         $this->client = $httpClient ?: new Client([
-            'base_uri' => self::WIT_API_BASE_URI,
-            'timeout' => self::DEFAULT_TIMEOUT,
+            'base_uri'        => self::WIT_API_BASE_URI,
+            'timeout'         => self::DEFAULT_TIMEOUT,
             'connect_timeout' => self::DEFAULT_TIMEOUT,
         ]);
     }
@@ -79,15 +77,16 @@ class Wit
             return $this->promises[] = $this->client->requestAsync($method, $uri, $options);
         }
         $this->lastResponse = $this->client->request($method, $uri, $options);
+
         return json_decode($this->lastResponse->getBody(), true);
     }
 
     protected function getDefaultHeaders()
     {
         return array_merge([
-            'User-Agent' => 'wit-' . self::VERSION,
-            'Authorization' => 'Bearer ' . $this->access_token,
-            'Accept' => 'application/vnd.wit.' . self::WIT_API_VERSION . '+json',
+            'User-Agent'    => 'wit-'.self::VERSION,
+            'Authorization' => 'Bearer '.$this->access_token,
+            'Accept'        => 'application/vnd.wit.'.self::WIT_API_VERSION.'+json',
         ], $this->headers);
     }
 
@@ -95,6 +94,7 @@ class Wit
     {
         $this->setHeaders(['Content-type' => 'audio/wav']);
         $query = array_merge(compact('q'), $params);
+
         return $this->makeRequest('POST', self::SPEECH_INTENT_API, $query);
     }
 

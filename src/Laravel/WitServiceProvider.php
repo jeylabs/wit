@@ -19,7 +19,7 @@ class WitServiceProvider extends ServiceProvider
 
     protected function setupConfig(Application $app)
     {
-        $source = __DIR__ . '/config/wit.php';
+        $source = __DIR__.'/config/wit.php';
 
         if ($app instanceof LaravelApplication && $app->runningInConsole()) {
             $this->publishes([$source => config_path('wit.php')]);
