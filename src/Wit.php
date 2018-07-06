@@ -27,8 +27,8 @@ class Wit
         $this->access_token = $access_token;
         $this->isAsyncRequest = $isAsyncRequest;
         $this->client = $httpClient ?: new Client([
-            'base_uri'        => self::WIT_API_BASE_URI,
-            'timeout'         => self::DEFAULT_TIMEOUT,
+            'base_uri' => self::WIT_API_BASE_URI,
+            'timeout' => self::DEFAULT_TIMEOUT,
             'connect_timeout' => self::DEFAULT_TIMEOUT,
         ]);
     }
@@ -69,10 +69,72 @@ class Wit
         return $this->makeRequest('GET', self::TEXT_INTENT_API, $query);
     }
 
-    protected function makeRequest($method, $uri, $query = [])
+    //Retrieve the list of all available entities
+    public function getEntities()
+    {
+        return $this->makeRequest('GET', 'entities');
+    }
+
+    //Create a new entity
+    public function createEntities($id, $doc)
+    {
+        $data = [
+            'id' => $id,
+            'doc' => $doc,
+        ];
+        return $this->makeRequest('POST', 'entities', [], $data);
+    }
+
+    //Retrieve all values of an entity
+    public function getEntity($id)
+    {
+        return $this->makeRequest('GET', 'entities/' . $id);
+    }
+
+    //Update the information of an entity
+    public function updateEntity($id, $data)
+    {
+        return $this->makeRequest('PUT', 'entities/' . $id, [], $data);
+    }
+
+    //Add new values to a keyword entity
+    public function addNewValueToEntity($id, $value)
+    {
+        return $this->makeRequest('POST', 'entities/' . $id . '/values', [], $value);
+    }
+
+    //Remove a given value from an entity
+    public function removeValueFromEntity($id, $value)
+    {
+        return $this->makeRequest('DELETE', 'entities/' . $id . '/values/' . $value);
+    }
+
+    //Create a new expression for a keyword entity -   POST https://api.wit.ai/entities/$ENTITY_ID/values/$ENTITY_VALUE/expressions
+    public function createExpressionToEntity($id, $value, $expression)
+    {
+        $data = ['expression' => $expression];
+        return $this->makeRequest('POST', 'entities/' . $id . '/values/' . $value . '/expressions', [], $data);
+    }
+
+    //Remove an expression from an entity
+    public function removeExpressionFromEntity($id, $value, $expression)
+    {
+        return $this->makeRequest('DELETE', 'entities/' . $id . '/values/' . $value . '/expressions/' . $expression);
+    }
+
+    //Train the app
+    public function train($samples)
+    {
+        return $this->makeRequest('POST', 'samples', [], $samples);
+    }
+
+    protected function makeRequest($method, $uri, $query = [], $data = [])
     {
         $options[GuzzleRequestOptions::QUERY] = $query;
         $options[GuzzleRequestOptions::HEADERS] = $this->getDefaultHeaders();
+        if (count($data) > 0) {
+            $options[GuzzleRequestOptions::JSON] = $data;
+        }
         if ($this->isAsyncRequest) {
             return $this->promises[] = $this->client->requestAsync($method, $uri, $options);
         }
@@ -84,9 +146,9 @@ class Wit
     protected function getDefaultHeaders()
     {
         return array_merge([
-            'User-Agent'    => 'wit-'.self::VERSION,
-            'Authorization' => 'Bearer '.$this->access_token,
-            'Accept'        => 'application/vnd.wit.'.self::WIT_API_VERSION.'+json',
+            'User-Agent' => 'wit-' . self::VERSION,
+            'Authorization' => 'Bearer ' . $this->access_token,
+            'Accept' => 'application/vnd.wit.' . self::WIT_API_VERSION . '+json',
         ], $this->headers);
     }
 
